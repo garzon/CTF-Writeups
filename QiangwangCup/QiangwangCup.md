@@ -30,67 +30,68 @@ ida打开，发现0x400b56是关键部分，
 keygen.cpp
 [code]
 
-#include "md5.h"
-#include <iostream>
+	#include "md5.h"
+	#include <iostream>
 
-using namespace std;
+	using namespace std;
 
-void calc(const char *st) {
-	MD5 a(st);
-	const byte *p = a.digest();
-	string v42 = "", res="";
-	char buff[10];
-	for(int k=0; k<=15; k++) {
-		sprintf(buff, "%x", p[k]>>4);
-		sprintf(buff, "%d", buff[0]);
-		if(buff[0]!='0')
-			v42+=buff;
-		sprintf(buff, "%x", p[k]&0xf);
-		sprintf(buff, "%d", buff[0]);
-		if(buff[0]!='0')
-			v42+=buff;
+	void calc(const char *st) {
+		MD5 a(st);
+		const byte *p = a.digest();
+		string v42 = "", res="";
+		char buff[10];
+		for(int k=0; k<=15; k++) {
+			sprintf(buff, "%x", p[k]>>4);
+			sprintf(buff, "%d", buff[0]);
+			if(buff[0]!='0')
+				v42+=buff;
+			sprintf(buff, "%x", p[k]&0xf);
+			sprintf(buff, "%d", buff[0]);
+			if(buff[0]!='0')
+				v42+=buff;
+		}
+		int pp=0, k=5;
+		while(pp<8) {
+			while(v42[pp+k]=='0') k++;
+			res+=v42[pp+k];
+			pp++;
+		}
+		printf("%c%c%c%c-%c%c%c%c-%c%c%c%c-%c%c%c%c-1111\n",
+			res[3],
+			st[0],
+			st[8],
+			res[7],
+			res[6],
+			res[4],
+			st[4],
+			res[5],
+			st[2],
+			st[6],
+			res[1],
+			st[10],
+			res[0],
+			st[12],
+			st[14],
+			res[2]);
 	}
-	int pp=0, k=5;
-	while(pp<8) {
-		while(v42[pp+k]=='0') k++;
-		res+=v42[pp+k];
-		pp++;
-	}
-	printf("%c%c%c%c-%c%c%c%c-%c%c%c%c-%c%c%c%c-1111\n",
-		res[3],
-		st[0],
-		st[8],
-		res[7],
-		res[6],
-		res[4],
-		st[4],
-		res[5],
-		st[2],
-		st[6],
-		res[1],
-		st[10],
-		res[0],
-		st[12],
-		st[14],
-		res[2]);
-}
 
-int main() {
-	calc("1413191117121012");
-	calc("2413191117121012");
-	calc("3413191117121012");
-	calc("4413191117121012");
-	calc("5413191117121012");
-	calc("7413191117121012");
-	calc("8413191117121012");
-	calc("1413191117121022");
-	calc("1413191117121032");
-	calc("1413191117121002");
-	return 0;
-}
+	int main() {
+		calc("1413191117121012");
+		calc("2413191117121012");
+		calc("3413191117121012");
+		calc("4413191117121012");
+		calc("5413191117121012");
+		calc("7413191117121012");
+		calc("8413191117121012");
+		calc("1413191117121022");
+		calc("1413191117121032");
+		calc("1413191117121002");
+		return 0;
+	}
 [/code]
 
 得到的sn:
+```
 5115-6415-1111-8111-1111
 4215-1815-1191-2117-1111
 4314-7815-1191-1117-1111
@@ -101,3 +102,4 @@ int main() {
 5119-9215-1151-7121-1111
 1118-4112-1151-8137-1111
 8115-5111-1181-4104-1111
+```
