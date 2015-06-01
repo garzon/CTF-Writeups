@@ -1,34 +1,35 @@
 # 2015强网杯Writeup
 
 ## Ringtone
-用audacity打开ringtone.wav，查看频率分析，如图
-![FFT](FFT.bmp)
-切换到spectrogram模式，如图，
-![spectrogram](spectrogram.bmp)
-可看到高频区域有一些信息，
-翻译成二进制得0b01100110、0b00110110，
-也即是f6字符，猜测应该是flag{...}，
-多看几个字符后发现每8位结尾都是0，
-于是把每8bit倒序一下，得flag
-flag{f0r3ns1c_1s_r3al1y_v3ry_ve7y_fun}
-吐槽一下flag太长了..人肉读二进制ascii真蛋疼= =
+用audacity打开ringtone.wav，查看频率分析，如图   
+![FFT](FFT.bmp)   
+显然高频区有问题，切换到spectrogram模式，如图，   
+![spectrogram](spectrogram.bmp)   
+可看到高频区域有一些信息，   
+翻译成二进制得0b01100110、0b00110110，   
+也即是f6字符，猜测应该是flag{...}，   
+多看几个字符后发现每8位结尾都是0，   
+于是把每8bit倒序一下，得flag   
+```flag{f0r3ns1c_1s_r3al1y_v3ry_ve7y_fun}```   
+吐槽一下flag太长了..人肉读二进制ascii真蛋疼= =   
 
 ## keygen
-ida打开，发现0x400b56是关键部分，
-![before_md5](before_md5.bmp)
-发现是把v16~v23部分与一些常数结合后md5，然后
-![after_md5](after_md5.bmp)
-把MD5字符串这些转成对应字符的ascii码整数字符串，去掉0，
-![check_md5.bmp](check_md5.bmp)
-再选第5位后字符与v8~v15比较。
-然后发现要提交10个不同的sn才过。
+ida打开，发现0x400b56是关键部分，   
+![before_md5](before_md5.bmp)   
+发现是把v16~v23部分与一些常数结合后md5，然后   
+![after_md5](after_md5.bmp)     
+把MD5字符串这些转成对应字符的ascii码整数字符串，去掉0，   
+![check_md5.bmp](check_md5.bmp)   
+再选第5位后字符与v8~v15比较。   
+然后发现要提交10个不同的sn才过。   
+   
+然后写keygen，随便乱生成v16~v23部分，加上常数部分后md5一下，   
+计算出对应的v8~v15后填进sn的对应位，加上-就可以了，   
+最后几位sn是废的，直接填1111   
 
-然后写keygen，随便乱生成v16~v23部分，加上常数部分后md5一下，计算出对应的v8~v15后填进sn的对应位，加上-就可以了，
-最后几位sn是废的，直接填1111
-
-下面的代码有些细节也许不对，偶尔生成的sn有问题，但懒得看了，反正换了几个字符串来生成sn就过了
-keygen.cpp
-[code]
+下面的代码有些细节也许不对，偶尔生成的sn有问题，但懒得看了，反正换了几个字符串来生成sn就过了   
+keygen.cpp   
+[code]   
 
 	#include "md5.h"
 	#include <iostream>
@@ -88,7 +89,8 @@ keygen.cpp
 		calc("1413191117121002");
 		return 0;
 	}
-[/code]
+
+[/code]   
 
 得到的sn:
 ```
