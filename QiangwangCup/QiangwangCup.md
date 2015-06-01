@@ -10,7 +10,7 @@
 也即是f6字符，猜测应该是flag{...}，   
 多看几个字符后发现每8位结尾都是0，   
 于是把每8bit倒序一下，得flag   
-```flag{f0r3ns1c_1s_r3al1y_v3ry_ve7y_fun}```   
+```flag{f0r3ns1c_1s_r3al1y_v3ry_ve7y_fun}```
 吐槽一下flag太长了..人肉读二进制ascii真蛋疼= =   
 
 ## keygen
