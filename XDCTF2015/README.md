@@ -3,6 +3,7 @@
 ## MISC 300
 
 上来肯定先例行检查下LSB啦    
+
 ```python
 >>> import Image
 >>> a=Image.open('zxczxc.png')
