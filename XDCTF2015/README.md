@@ -258,7 +258,7 @@ __this() for __l['buf'] in [(
 ```
 
 其中`__g[xxxxx]`就是全局变量，`__l[xxx]`就是局部变量    
-PS: 还有那个__y就是神秘的Y combinator，想了解更多的自行google....    
+PS: 还有那个__y`(lambda f: (lambda x: x(x))(lambda y: f(lambda: y(y)())))`就是神秘的Y combinator，想了解更多的自行google....(不是那家公司- -是那家公司名字的由来)    
 
 那么加密方式就出来了，把原字符在table的index+1后，把后6位保存到文件里      
 （其实这里由于我懒得看setbit，getbit所以搞反了字节序，
