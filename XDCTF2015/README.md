@@ -257,13 +257,13 @@ __this() for __l['buf'] in [(
  for __g['table'] in [(string.printable.strip())]][0] for __g['string'] in [(__import__('string', __g, __g))]][0])(globals(), (lambda f: (lambda x: x(x))(lambda y: f(lambda: y(y)()))))
 ```
 
-其中__g[xxxxx]就是全局变量，__l[xxx]就是局部变量
+其中`__g[xxxxx]`就是全局变量，`__l[xxx]`就是局部变量
 
 那么加密方式就出来了，把原字符在table的index+1后，把后6位保存到文件里      
 （其实这里由于我懒得看setbit，getbit所以搞反了字节序，
 后来把aaaaaaaaaaaa写入flag.txt用这个程序加密后仔细逐位对比后才发现- -||）
 
-由于6*4=3*8，我就每3字节一起decode      
+由于`6*4==3*8`，我就每3字节一起decode      
 decode3b函数：
 ```python
 def tobin(b):
@@ -294,7 +294,7 @@ def decode3b(s):
 ```
 
 由于只保留了最后6位，所以在table里的index大于64的特殊字符是没有的，要手动（脑）补上第7位，
-查table+64可知'q'->'{', 'o'->'_'等等....
+查table+64可知`'q'->'{', 'o'->'_'`等等....
 得：
 `xdctf{0ne-l1n3d_Py7h0n_1s_@wes0me233}`
 
