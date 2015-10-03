@@ -279,7 +279,7 @@ def decode3b(s):
     sa=tobin(a)
     sb=tobin(b)
     sc=tobin(c)
-    return table[int(sa[2:],2)]+table[int(sb[4:]+sa[:2],2)]+=table[int(sc[6:]+sb[:4],2)]+table[int(sc[:6],2)]
+    return table[int(sa[2:],2)]+table[int(sb[4:]+sa[:2],2)]+table[int(sc[6:]+sb[:4],2)]+table[int(sc[:6],2)]
 
 >>> a=open('flag.enc','rb')
 >>> a=a.read()
