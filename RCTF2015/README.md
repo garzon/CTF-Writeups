@@ -12,7 +12,10 @@
 - 上传非.php后缀，content-type改成image/jpg: you know what i want
 - 上传.php5后缀，content-type改成image/jpg:: not a really php file
 - 文件里含有<?php : something shows that is a php file!
-最后翻官网http://php.net/manual/en/language.basic-syntax.phptags.php，上传<script language="php">成功拿到flag.
+
+最后翻官网
+http://php.net/manual/en/language.basic-syntax.phptags.php
+上传`<script language="php">`成功拿到flag.
 
 ## login WEB 300
 
