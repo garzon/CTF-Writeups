@@ -7,8 +7,6 @@ import webapp2
 from webapp2_extras import sessions
 
 
-import util
-
 class RequestHandler(webapp2.RequestHandler):
     """Base request handler for Mannequin Moments."""
     jinja_env = jinja2.Environment(
