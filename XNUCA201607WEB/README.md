@@ -28,7 +28,7 @@
 提交`name=1&name=2`有：
 ```js
 {
-'name': '2',
+'name': '1',
 'phone': '',
 'email': ''
 }
@@ -62,7 +62,7 @@
 在perl里面转义函数quote()在形如"id=1'&id=2"的时候直接返回"1'"....也就是直接无障碍裸的sql注入....    
 
 payload:
-[perl.png](perl.png)
+![perl.png](perl.png)
 
 
 # BOSS 500
