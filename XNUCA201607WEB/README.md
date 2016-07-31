@@ -33,14 +33,6 @@
 'email': ''
 }
 ```
-提交`name=1&name=2`有：
-```js
-{
-'name': '2',
-'phone': '',
-'email': ''
-}
-```
 提交`name=1&name=2&name=3`有：
 ```js
 {
