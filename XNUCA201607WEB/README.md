@@ -89,7 +89,7 @@ if($username=="editor" && $password_md5=="0e
 然后估计是在文件名里面XSS管理员，那么注意一下把'/'用'&#47;'代替一下就好，当然也可以用其他办法，    
 
 XSS返回：
-'''
+```
 ...
   'HTTP_CONNECTION' => 'keep-alive',
   'HTTP_CACHE_CONTROL' => 'max-age=0',
@@ -105,6 +105,6 @@ XSS返回：
   'str' => 'send_role=xt=urn:btih:1207054EE7FBB53FF0708BDE6A7934B7E5095CC9',
 )array (
 )
-'''
+```
 
 下载cookie的磁力链接即可看到flag。
