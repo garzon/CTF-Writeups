@@ -11,7 +11,7 @@ wargame地址： https://ethernaut.zeppelin.solutions/ 。
 
 前置条件：基本了解智能合约概念，了解solidity语言，了解ETH web3 json RPC provider、metamask基本原理和使用
 
-这套题目，智能合约都部署在Ropsten测试网络，因此现根据level0提示获取些测试网络ether。这个平台本身也是一个DApp，由一个智能合约负责管理每个关卡的合约instance。
+这套题目，智能合约都部署在Ropsten测试网络，因此先要根据level0提示去faucet获取些测试网络ether。这个平台本身也是一个DApp，由一个智能合约负责管理每个关卡的合约instance。
 
 # level0 Hello Ethernaut
 题目说明已经很详细了。点击`Get new instance`， 然后浏览器console输入`await contract.info()`即可开始（只要你安装配置好metamask），嫌麻烦或者`contract.abi`查看abi直接猜出来通关方法：
