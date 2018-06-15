@@ -52,7 +52,7 @@ contract Fallback {
   function() payable public;
 }
 ```
-在remix compile后，在run标签里填入合约地址，然后点击at address即可交互了。
+在remix compile后，在run标签里填入合约地址，然后点击`At address`即可交互了。
 
 这题的思路是，先value=1wei调用contribute()，然后value=1wei调用fallback()即可重设owner，最后value=0调用withdraw完成任务。
 
@@ -95,7 +95,7 @@ contract MyContract {
     }
 }
 ```
-remix IDE中compile后，我们需要部署MyContract，选择injected web3 provider后在Deploy MyContract时，构造函数填入关卡合约instance的地址，然后在10个新区块中调用`exploit()`即可，需要花点时间，隔段时间等交易被打包进入一个区块后就又点击“exploit()”一次......10次比较蛋疼，尤其是网络不好
+remix IDE中compile后，我们需要部署MyContract，选择`injected web3` provider后在Deploy MyContract时，构造函数填入关卡合约instance的地址，然后在10个新区块中调用`exploit()`即可，需要花点时间，隔段时间等交易被打包进入一个区块后就又点击`exploit()`一次......10次比较蛋疼，尤其是网络不好
 
 从这道题可以看出，智能合约系统内部没有安全的随机数，只能通过智能合约系统外部的调用实现。
 
@@ -165,7 +165,7 @@ contract MyContract {
 ```
 
 # level8 vault
-区块链上所有东西都是公开的，查看json rpc文档可知道有`eth.getStorageAt()` API，根据solidity的“对象模型” (http://solidity.readthedocs.io/en/develop/miscellaneous.html)，可知password放在storage的1的位置
+区块链上所有东西都是公开的，查看json rpc文档可知道有`eth.getStorageAt()` API，根据solidity的“对象模型” (http://solidity.readthedocs.io/en/develop/miscellaneous.html)，可知`password`放在storage的1的位置
 
 console里输入即可查看密码：
 ```js
@@ -177,7 +177,7 @@ web3.eth.getStorageAt(contract.address, 1, console.log);
 # level9 King
 `king.transfer`函数在调用失败时会抛异常，后面`king = msg.sender;`就不会被执行，我们就达到目标了，因此只要让transfer时失败就行，我们让king不能接受eth transfer即可
 
-```
+```solidity
 pragma solidity ^0.4.18;
 
 contract King {
@@ -207,7 +207,7 @@ contract FallbackThrowException {
 
 调用构造函数时，value=1.1 ether即可。
 
-FallbackThrowException作为king时，transfer会调用FallbackThrowException.fallback，自然就throw失败了。
+`FallbackThrowException`作为king时，transfer会调用`FallbackThrowException.fallback`，自然就throw失败了。
 
 验证通过后可以调用dtor回收零头
 
