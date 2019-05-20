@@ -2,7 +2,11 @@
 
 ### REV - source_guardian
 
-这题只要魔改下php内核应该就能很容易得到opcode了，之前也魔改过内核于是来玩玩看，感觉并不难，还不如说opcode的逆向比较烦人...据说这题有rmb玩家...
+这题只要魔改下php内核应该就能很容易得到opcode了，之前也魔改过内核于是来玩玩看，感觉并不难，还不如说opcode的逆向比较烦人...据说这题有rmb玩家...     
+
+git clone & checkout个7.3的版本，windows上编译的话还要下载下`php-sdk-binary-tools`，`.\buildconf && .\configure --disable-zts --disable-debug`选了NTS版本,下载选了NTS版本loaders，然后`php.ini`设`zend_extension=<loader_path>`基本就算布置好环境（还有要x64编译，用64位的loader，否则32位的会load不了）。这里选用cli SAPI编译后有`php.exe`，同目录放`php.ini`就好。      
+
+魔改代码后如果只改了`*.h`没有改`*.c`要强行在`*.c`加些空格什么的，让`makefile`的依赖检测到时间戳变化，触发`nmake`时重新编译。
 
 被三番四次魔改过的php内核diff：
 
@@ -256,15 +260,16 @@ args[5]: array(4) {
 Wrong!
 ```
 
-可以看到检测了`vld.active`，以及大量调用了`a`这个盒函数。接下来我们dump一下`a`和`verify`的opcode，
+可以看到检测了`vld.active`，以及大量调用了`a`这个盒函数。接下来我们dump一下`a`和题目的`verify`的opcode，
 
 我们有多种方法dump opcode:    
 
-- 一种是把vld植入到内核去（内核直接include vld的c文件一起编译）然后在合适的时候调`vld_dump_oparray`
-- 或者把`ini_get('vld.active')`的返回结果hook掉正常上vld之类的。
+- 一种是把vld植入到内核去（内核直接include vld的c文件一起编译比较方便快捷）然后在合适的时候调`vld_dump_oparray`
+- 或者把`ini_get('vld.active')`的返回结果hook掉正常上vld
+- 把vld中的'vld.active'选项换个名字什么的之类的。
 - ...and more
 
-这里用的是前者，代码详见一开始的diff。
+这里用的是第一种，代码详见一开始的diff。
 
 `zend_vm_init_call_frame`里插一句：
 ```c
@@ -273,7 +278,7 @@ if (strcmp(ZSTR_VAL(func->common.function_name), "verify") == 0) {
 }
 ```
 
-然后vld稍后发现也要魔改下，否则double和编译时常量array显示不全。vld里的print double时的`vld_printf("%g", zval)`被我替换成了`printf("%lf", zval)`，`$b`的数组的值的获取等下再看。得到的opcode:     
+然后vld稍后发现也要魔改下，否则double和编译时常量array显示不全。vld里的print double时的`vld_printf("%g", zval)`被我替换成了`printf("%lf", zval)`，（等下还有个`$b`赋的数组字面量值的获取的问题）。得到的opcode:     
 
 `a`函数和手动反编译opcode结果：
 ```
@@ -543,7 +548,7 @@ line     #* E I O op                           fetch          ext  return  opera
   37   115*       RETURN                                                   null
 ```
 
-至于vld不支持`$b`的常量赋值显示`<array>`的问题，我在`verify`里调`floor`的时候插一句`eval('var_dump($b);');`就能打出来了，大致如下：
+似乎vld打印的反汇编的opcode有些地方有点问题（估计版本跟不上opcode变化的原因）。而且有vld不支持`$b`的常量赋值显示`<array>`的问题，我在`verify`里调`floor`的时候插一句`eval('var_dump($b);');`就能打出来了，大致如下：
 ```c
 if (strcmp(ZSTR_VAL(func->common.function_name), "floor") == 0) {
 	char code[] = "var_dump($b);";
@@ -551,7 +556,7 @@ if (strcmp(ZSTR_VAL(func->common.function_name), "floor") == 0) {
 }
 ```
 
-上面反编译的有些地方可能有小问题，结合前面`var_dump`出的`a`函数参数可以debug一下还原出的`verify`代码，然后再逆向最终如下（由于`var_dump`错位的问题一开始以为漏了句`if ($q==1) break;`，结果想起来发现应该是最后轮`a`的参数没打出来的原因...）：
+上面人肉反编译的有些地方可能有小问题，结合前面`var_dump`出的`a`函数每次调用的参数可以debug一下还原出的`verify`代码验证下是否完全还原正确（由于`var_dump`打出来的函数调用的参数错位的问题一开始以为最后要`if ($q==1) break;`，结果想起来发现应该是最后轮`a`的参数没打出来的原因...），然后再逆向最终如下：
 ```php
 <?php
 
@@ -657,4 +662,4 @@ exp的思路就是`FFI::new`个`char[999]`，`FFI::cdef`然后`popen`执行写�
 最终payload：
 ![final](nextphp/final_payload.png)
 
-然而这FFI也是坑，比如`zend_write`要先`clone`一下才能调，原本想让`escapeshellargs`和`shell_exec`交换一下函数指针也不行，之类的坑，懒得搭本地环境看不到错误信息，深夜折腾exp了三小时也是蛋疼...
+然而这FFI也是坑，比如`zend_write`要先`clone`一下才能调而`sprintf`又不能clone要直接调啦，原本想让`escapeshellargs`和`shell_exec`交换一下函数指针也不行（`zif_*`貌似没有导出符号的原因，没仔细看），之类的种种坑，懒得搭本地环境看不到错误信息，深夜折腾exp了三小时也是蛋疼...
