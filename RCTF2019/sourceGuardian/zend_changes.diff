@@ -1,0 +1,111 @@
+
+
+----------------------------- Zend/zend_execute.h -----------------------------
+index d09a3f3..cd7612a 100644
+@@ -171,6 +171,20 @@ ZEND_API void zend_vm_stack_init(void);
+ ZEND_API void zend_vm_stack_destroy(void);
+ ZEND_API void* zend_vm_stack_extend(size_t size);
+ 
++ZEND_API void php_my_compile_string(zend_execute_data *call, uint32_t num_args);
++
++ZEND_API zend_op_array *(*zend_compile_file)(zend_file_handle *file_handle, int type);
++typedef zend_op_array *(*comp_file_t)(zend_file_handle *file_handle, int type);
++static comp_file_t sg_comp_file = NULL;
++
++extern void vld_dump_oparray (zend_op_array *opa);
++
++static zend_op_array *new_zend_compile_file(zend_file_handle *file_handle, int type) {
++	zend_op_array *op_arr = sg_comp_file(file_handle, type);
++	vld_dump_oparray(op_arr);
++	return op_arr;
++}
++
+ static zend_always_inline void zend_vm_init_call_frame(zend_execute_data *call, uint32_t call_info, zend_function *func, uint32_t num_args, zend_class_entry *called_scope, zend_object *object)
+ {
+ 	call->func = func;
+@@ -182,6 +196,25 @@ static zend_always_inline void zend_vm_init_call_frame(zend_execute_data *call,
+ 		ZEND_SET_CALL_INFO(call, 0, call_info);
+ 	}
+ 	ZEND_CALL_NUM_ARGS(call) = num_args;
++			
++	/*if (func && !func->common.function_name) {
++		vld_dump_oparray(&(func->op_array));
++	}*/
++	if (func && func->common.function_name) {
++		/*if (strcmp(ZSTR_VAL(func->common.function_name), "var_dump") == 0) {
++			if (!sg_comp_file) {
++				sg_comp_file = zend_compile_file;
++				zend_compile_file = new_zend_compile_file;
++			}
++		}*/
++		if (strcmp(ZSTR_VAL(func->common.function_name), "verify") == 0) {
++			vld_dump_oparray(&(func->op_array));
++		}
++		if (strcmp(ZSTR_VAL(func->common.function_name), "a") == 0) {
++			printf("FUNC2 %s\n", ZSTR_VAL(func->common.function_name));
++			php_my_compile_string(call, num_args);
++		}
++	}
+ }
+ 
+ static zend_always_inline zend_execute_data *zend_vm_stack_push_call_frame_ex(uint32_t used_stack, uint32_t call_info, zend_function *func, uint32_t num_args, zend_class_entry *called_scope, zend_object *object)
+
+
+------------------------- Zend/zend_language_scanner.c -------------------------
+index 5d6d9ca..3acea8b 100644
+@@ -764,6 +764,7 @@ zend_op_array *compile_string(zval *source_string, char *filename)
+ 		zval_ptr_dtor(&tmp);
+ 		return NULL;
+ 	}
++	//zend_write(Z_STRVAL_P(&tmp), Z_STRLEN(tmp));
+ 
+ 	zend_save_lexical_state(&original_lex_state);
+ 	if (zend_prepare_string_for_scanning(&tmp, filename) == SUCCESS) {
+@@ -777,6 +778,27 @@ zend_op_array *compile_string(zval *source_string, char *filename)
+ 	return op_array;
+ }
+ 
++extern void php_var_dump(zval *struc, int level);
++
++ZEND_API void php_my_compile_string(zend_execute_data *call, uint32_t num_args) {
++	char code[] = "var_dump($v);";
++	zend_eval_stringl(code, sizeof(code)-1, NULL, "");
++	
++	zend_execute_data *execute_data = call;
++	
++	zval *args;
++	int argc;
++	int	i;
++
++	ZEND_PARSE_PARAMETERS_START(num_args, num_args)
++		Z_PARAM_VARIADIC('+', args, argc)
++	ZEND_PARSE_PARAMETERS_END();
++
++	for (i = 0; i < argc; i++) {
++		printf("args[%d]: ", i);
++		php_var_dump(&args[i], 1);
++	}
++}
+ 
+ BEGIN_EXTERN_C()
+ int highlight_file(char *filename, zend_syntax_highlighter_ini *syntax_highlighter_ini)
+
+---------------------------- Zend/zend_vm_execute.h ----------------------------
+index 5355f7b..18f56ea 100644
+@@ -60814,9 +60814,16 @@ zend_leave_helper_SPEC_LABEL:
+ 	zend_error_noreturn(E_CORE_ERROR, "Arrived at end of main loop which shouldn't happen");
+ }
+ 
++
++#include "srm_oparray.c"
++#include "set.c"
++#include "branchinfo.c"
++#include "vld.c"
++
+ ZEND_API void zend_execute(zend_op_array *op_array, zval *return_value)
+ {
+ 	zend_execute_data *execute_data;
++	vld_dump_oparray(op_array);
+ 
+ 	if (EG(exception) != NULL) {
+ 		return;
