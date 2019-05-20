@@ -117,7 +117,7 @@ index 5355f7b..18f56ea 100644
 
 出题人给出的提示writeup的主要意义就在于给出了一个比较良好的hook点`zend_vm_init_call_frame`，所有函数调用的时候都会经过这里。
 
-比如说首先我们可以在这里强行插入个`var_dump`（把PHP_FUNCTION(var_dump)的代码粘贴到`php_my_compile_string`然后`zend_vm_init_call_frame`里调`php_my_compile_string`）：
+比如说首先我们可以在这里强行插入个`var_dump`（把`PHP_FUNCTION(var_dump)`的代码粘贴到`php_my_compile_string`然后`zend_vm_init_call_frame`里调`php_my_compile_string`）：
 ```c
 +   zend_execute_data *execute_data = call;
 +	zval *args;
@@ -133,7 +133,7 @@ index 5355f7b..18f56ea 100644
 +		php_var_dump(&args[i], 1);
 ```
 
-然后函数调用实际上就变成var_dump(...$args);ORIGINAL_FUNCTION(...$args)了。跑一下php能得到调用函数名和对应的参数，然而参数似乎有些错位（得到的是前x>=0次函数调用的参数，脑补一下基本能看下大概，但后面被小坑了一下）如下:
+然后函数调用实际上就变成`var_dump(...$args); ORIGINAL_FUNCTION(...$args);`了。跑一下php能得到调用函数名和对应的参数，然而参数似乎有些错位（得到的是前x>=0次函数调用的参数，脑补一下基本能看下大概，但后面被小坑了一下）如下:
 
 ```
 FUNC2 dirname
@@ -258,7 +258,13 @@ Wrong!
 
 可以看到检测了`vld.active`，以及大量调用了`a`这个盒函数。接下来我们dump一下`a`和`verify`的opcode，
 
-我们有多种方法dump opcode，一种是把vld植入到内核去（内核直接include vld的c文件一起编译）然后在合适的时候调`vld_dump_oparray`，或者把`ini_get('vld.active')`的返回结果hook掉正常上vld之类的。这里用的是前者，代码详见一开始的diff。
+我们有多种方法dump opcode:    
+
+- 一种是把vld植入到内核去（内核直接include vld的c文件一起编译）然后在合适的时候调`vld_dump_oparray`
+- 或者把`ini_get('vld.active')`的返回结果hook掉正常上vld之类的。
+- ...and more
+
+这里用的是前者，代码详见一开始的diff。
 
 `zend_vm_init_call_frame`里插一句：
 ```c
@@ -644,7 +650,7 @@ function reverse() {
 
 ![phpinfo](nextphp/ffi_enable.png)
 
-也就是说我们可以通过FFI调用c的popen来绕过open_basedir之类的限制，但是FFI为了安全只设置为了只能在preload的时候用，然后preload里有unserialize那大概就是反序列化的时候调FFI了。    
+也就是说我们可以通过FFI调用c的popen来绕过open_basedir之类的限制，但是FFI为了安全只设置为了只能在`opcache.preload`用，然后preload里有unserialize那大概就是反序列化的时候调FFI了。    
 
 exp的思路就是`FFI::new`个`char[999]`，`FFI::cdef`然后`popen`执行写入到buf，`zend_write`回显buf。
 
